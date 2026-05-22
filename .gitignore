@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.py[cod]
+*.class
+.venv/
+env/
+venv/
+.ipynb_checkpoints/
+
+# Node/React
+node_modules/
+.apps/
+dist/
+.env
+.env.local
+
+# OS
+.DS_Store
+Thumbs.db
