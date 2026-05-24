@@ -17,3 +17,13 @@ dist/
 # OS
 .DS_Store
 Thumbs.db
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*

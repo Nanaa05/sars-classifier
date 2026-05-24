@@ -12,3 +12,14 @@ Solusi komputasi biologi untuk mengklasifikasikan varian SARS-CoV-2 (Alpha, Delt
 - **Backend:** Python, FastAPI, Biopython
 - **Frontend:** React, Vite, Recharts
 - **ML:** Scikit-Learn (Random Forest / SVM)
+
+
+```bash
+uv venv
+. .venv/bin/activate
+uv pip install -r requirements.txt
+```
+
+```bash
+uv pip freeze > requirements.txt
+```
