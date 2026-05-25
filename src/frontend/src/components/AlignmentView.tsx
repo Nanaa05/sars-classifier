@@ -7,7 +7,12 @@ interface AlignmentViewProps {
   score: number;
 }
 
-const AlignmentView: React.FC<AlignmentViewProps> = ({ title, reference, query, score }) => {
+const AlignmentView: React.FC<AlignmentViewProps> = ({
+  title,
+  reference,
+  query,
+  score,
+}) => {
   if (!reference || !query) return null;
 
   const renderAlignedSequence = (refStr: string, qStr: string) => {
@@ -15,16 +20,38 @@ const AlignmentView: React.FC<AlignmentViewProps> = ({ title, reference, query, 
     const qChars = qStr.split("");
 
     return (
-      <div style={{ display: "flex", flexDirection: "column", fontFamily: "monospace", overflowX: "auto", whiteSpace: "pre", padding: "12px", backgroundColor: "#1e1e1e", color: "#fff", borderRadius: "6px", fontSize: "14px", lineHeight: "1.8" }}>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          fontFamily: "monospace",
+          overflowX: "auto",
+          whiteSpace: "pre",
+          padding: "12px",
+          backgroundColor: "#1e1e1e",
+          color: "#fff",
+          borderRadius: "6px",
+          fontSize: "14px",
+          lineHeight: "1.8",
+        }}
+      >
         <div style={{ display: "flex" }}>
-          <span style={{ width: "80px", color: "#888", flexShrink: 0 }}>REF: </span>
+          <span style={{ width: "80px", color: "#888", flexShrink: 0 }}>
+            REF:{" "}
+          </span>
           {refChars.map((char, idx) => (
-            <span key={`ref-${idx}`} style={{ backgroundColor: char === "-" ? "#442222" : "transparent", padding: "0 1px" }}>
+            <span
+              key={`ref-${idx}`}
+              style={{
+                backgroundColor: char === "-" ? "#442222" : "transparent",
+                padding: "0 1px",
+              }}
+            >
               {char}
             </span>
           ))}
         </div>
-        
+
         <div style={{ display: "flex", color: "#4caf50" }}>
           <span style={{ width: "80px", flexShrink: 0 }}></span>
           {refChars.map((char, idx) => (
@@ -35,7 +62,9 @@ const AlignmentView: React.FC<AlignmentViewProps> = ({ title, reference, query, 
         </div>
 
         <div style={{ display: "flex" }}>
-          <span style={{ width: "80px", color: "#888", flexShrink: 0 }}>QUERY: </span>
+          <span style={{ width: "80px", color: "#888", flexShrink: 0 }}>
+            QUERY:{" "}
+          </span>
           {qChars.map((char, idx) => {
             const isGap = char === "-";
             const isMismatch = char !== refChars[idx] && !isGap;
@@ -44,7 +73,14 @@ const AlignmentView: React.FC<AlignmentViewProps> = ({ title, reference, query, 
             if (isMismatch) bgColor = "#554411";
 
             return (
-              <span key={`query-${idx}`} style={{ backgroundColor: bgColor, color: isMismatch ? "#ffca28" : "#fff", padding: "0 1px" }}>
+              <span
+                key={`query-${idx}`}
+                style={{
+                  backgroundColor: bgColor,
+                  color: isMismatch ? "#ffca28" : "#fff",
+                  padding: "0 1px",
+                }}
+              >
                 {char}
               </span>
             );
@@ -55,10 +91,32 @@ const AlignmentView: React.FC<AlignmentViewProps> = ({ title, reference, query, 
   };
 
   return (
-    <div style={{ marginBottom: "24px", border: "1px solid #ddd", borderRadius: "8px", padding: "16px" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+    <div
+      style={{
+        marginBottom: "24px",
+        border: "1px solid #ddd",
+        borderRadius: "8px",
+        padding: "16px",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "12px",
+        }}
+      >
         <h3 style={{ margin: 0 }}>{title}</h3>
-        <span style={{ fontWeight: "bold", backgroundColor: "#e3f2fd", color: "#0d47a1", padding: "4px 8px", borderRadius: "4px" }}>
+        <span
+          style={{
+            fontWeight: "bold",
+            backgroundColor: "#e3f2fd",
+            color: "#0d47a1",
+            padding: "4px 8px",
+            borderRadius: "4px",
+          }}
+        >
           Score: {score}
         </span>
       </div>
