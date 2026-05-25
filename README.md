@@ -23,3 +23,16 @@ uv pip install -r requirements.txt
 ```bash
 uv pip freeze > requirements.txt
 ```
+
+```bash
+gunicorn main:app \
+  --chdir src/backend \
+  -k uvicorn.workers.UvicornWorker \
+  -w 4 \
+  --env UVICORN_LOOP=uvloop \
+  --env UVICORN_HTTP=httptools \
+  -b 127.0.0.1:8080 \
+  --log-level critical \
+  --access-logfile /dev/null \
+  --error-logfile /dev/null
+```
