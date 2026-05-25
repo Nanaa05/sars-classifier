@@ -13,16 +13,22 @@ Solusi komputasi biologi untuk mengklasifikasikan varian SARS-CoV-2 (Alpha, Delt
 - **Frontend:** React, Vite, Recharts
 - **ML:** Scikit-Learn (Random Forest / SVM)
 
+## Setup
 
 ```bash
-uv venv
-. .venv/bin/activate
-uv pip install -r requirements.txt
+uv sync
 ```
 
+## Add Dependency
+
 ```bash
-uv pip freeze > requirements.txt
+uv add <package-name>
+
+# Dev dependency
+uv add --dev <package-name>
 ```
+
+## Run
 
 ```bash
 gunicorn main:app \
