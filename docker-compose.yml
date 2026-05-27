@@ -1,25 +1,25 @@
-version: '3.8'
+version: "3.8"
 
 services:
-  backend:
-    build:
-      context: .
-      dockerfile: src/backend/Dockerfile
-    container_name: sars-backend
-    expose:
-      - "8080"
-    restart: always
+    backend:
+        build:
+            context: .
+            dockerfile: src/backend/Dockerfile
+        container_name: sars-backend
+        expose:
+            - "8080"
+        restart: always
 
-  frontend:
-    build:
-      context: .
-      dockerfile: src/frontend/Dockerfile
-    container_name: sars-frontend
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
-    depends_on:
-      - backend
-    restart: always
+    frontend:
+        build:
+            context: .
+            dockerfile: src/frontend/Dockerfile
+        container_name: sars-frontend
+        ports:
+            - "8000:80"
+            - "8443:443"
+        volumes:
+            - ./Caddyfile:/etc/caddy/Caddyfile:ro
+        depends_on:
+            - backend
+        restart: always
