@@ -42,7 +42,9 @@ function App() {
 	const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
 	useEffect(() => {
-		return () => { if (timerRef.current) clearInterval(timerRef.current); };
+		return () => {
+			if (timerRef.current) clearInterval(timerRef.current);
+		};
 	}, []);
 
 	const handleClassify = async (sequence: string, modelType: string) => {
@@ -53,7 +55,9 @@ function App() {
 		setElapsed(0);
 		startRef.current = performance.now();
 		timerRef.current = setInterval(() => {
-			setElapsed(Math.floor((performance.now() - startRef.current) / 100) / 10);
+			setElapsed(
+				Math.floor((performance.now() - startRef.current) / 100) / 10,
+			);
 		}, 100);
 		try {
 			const baseUrl = import.meta.env.VITE_API_URL || "";
@@ -69,7 +73,9 @@ function App() {
 				);
 			}
 			setResult(await response.json());
-			setTotalTime(Math.round((performance.now() - startRef.current) / 100) / 10);
+			setTotalTime(
+				Math.round((performance.now() - startRef.current) / 100) / 10,
+			);
 		} catch (err: unknown) {
 			setError(err instanceof Error ? err.message : String(err));
 		} finally {
@@ -84,7 +90,7 @@ function App() {
 				<div className="max-w-6xl mx-auto px-6 py-4 flex items-baseline justify-between">
 					<div className="flex items-baseline gap-3">
 						<span className="font-mono text-lg font-semibold tracking-tight">
-							VariantScope
+							SARSClassifier
 						</span>
 						<span className="text-xs text-muted-foreground">
 							SARS-CoV-2 spike variant classifier
@@ -125,8 +131,8 @@ function App() {
 				<MethodsSection />
 
 				<footer className="text-xs text-muted-foreground font-mono pt-8 pb-4 border-t border-border">
-					VariantScope · IF3211 Domain Specific Computation ·
-					Kelompok 07 · Reference: SARS-CoV-2 Wuhan-Hu-1 spike (NCBI
+					VariantScope · IF3211 Domain Specific Computation · Kelompok
+					07 · Reference: SARS-CoV-2 Wuhan-Hu-1 spike (NCBI
 					YP_009724390.1)
 				</footer>
 			</main>
