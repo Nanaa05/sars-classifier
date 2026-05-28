@@ -159,7 +159,7 @@ function PredictionPanel({ result }: { result: ClassificationResult }) {
 					</div>
 				) : (
 					<p className="text-sm text-muted-foreground">
-						No characteristic variant markers found — sequence
+						No characteristic variant markers found, sequence
 						appears close to wild-type.
 					</p>
 				)}
@@ -196,8 +196,7 @@ function FeaturesPanel({ result }: { result: ClassificationResult }) {
 		{
 			name: "Aligned length",
 			value: `${f.length} aa`,
-			explain:
-				"Number of reference residues covered by the alignment.",
+			explain: "Number of reference residues covered by the alignment.",
 		},
 		{
 			name: "Sequence identity",
@@ -291,17 +290,23 @@ const DATASET_DIST = [
 const DATASET_STATS = [
 	{ variant: "Alpha", mean: "1270.0", std: "0.98", min: "1258", max: "1273" },
 	{ variant: "Delta", mean: "1264.3", std: "40.4", min: "946", max: "1273" },
-	{ variant: "Omicron", mean: "1269.4", std: "2.89", min: "1238", max: "1273" },
+	{
+		variant: "Omicron",
+		mean: "1269.4",
+		std: "2.89",
+		min: "1238",
+		max: "1273",
+	},
 ];
 
 function ModelPanel() {
 	return (
 		<div className="space-y-8">
 			<p className="text-sm text-muted-foreground max-w-2xl leading-relaxed">
-				Random Forest and SVM (RBF) classifiers trained on 595
-				filtered spike sequences from NCBI Virus (Alpha / Delta /
-				Omicron, ~200 each). Evaluated on a held-out test set with
-				5-fold cross-validation.
+				Random Forest and SVM (RBF) classifiers trained on 595 filtered
+				spike sequences from NCBI Virus (Alpha / Delta / Omicron, ~200
+				each). Evaluated on a held-out test set with 5-fold
+				cross-validation.
 			</p>
 
 			<div className="grid grid-cols-2 sm:grid-cols-4 gap-6 max-w-xl">
@@ -335,7 +340,12 @@ function ModelPanel() {
 						<ResponsiveContainer width="100%" height="100%">
 							<BarChart
 								data={DATASET_DIST}
-								margin={{ top: 4, right: 16, left: 0, bottom: 4 }}
+								margin={{
+									top: 4,
+									right: 16,
+									left: 0,
+									bottom: 4,
+								}}
 							>
 								<XAxis
 									dataKey="variant"
@@ -365,7 +375,10 @@ function ModelPanel() {
 										fontSize: 11,
 										fontFamily: "JetBrains Mono",
 									}}
-									cursor={{ fill: "var(--color-muted)", opacity: 0.4 }}
+									cursor={{
+										fill: "var(--color-muted)",
+										opacity: 0.4,
+									}}
 								/>
 								<Bar
 									dataKey="count"
@@ -379,27 +392,51 @@ function ModelPanel() {
 						<table className="w-full text-xs">
 							<thead>
 								<tr className="bg-muted/40 border-b border-border">
-									<th className="px-3 py-2 text-left font-medium text-muted-foreground">Variant</th>
-									<th className="px-3 py-2 text-right font-medium text-muted-foreground font-mono">Mean len</th>
-									<th className="px-3 py-2 text-right font-medium text-muted-foreground font-mono">Std</th>
-									<th className="px-3 py-2 text-right font-medium text-muted-foreground font-mono">Min</th>
-									<th className="px-3 py-2 text-right font-medium text-muted-foreground font-mono">Max</th>
+									<th className="px-3 py-2 text-left font-medium text-muted-foreground">
+										Variant
+									</th>
+									<th className="px-3 py-2 text-right font-medium text-muted-foreground font-mono">
+										Mean len
+									</th>
+									<th className="px-3 py-2 text-right font-medium text-muted-foreground font-mono">
+										Std
+									</th>
+									<th className="px-3 py-2 text-right font-medium text-muted-foreground font-mono">
+										Min
+									</th>
+									<th className="px-3 py-2 text-right font-medium text-muted-foreground font-mono">
+										Max
+									</th>
 								</tr>
 							</thead>
 							<tbody>
 								{DATASET_STATS.map((r) => (
-									<tr key={r.variant} className="border-b border-border last:border-0">
-										<td className="px-3 py-2 font-mono">{r.variant}</td>
-										<td className="px-3 py-2 text-right font-mono">{r.mean}</td>
-										<td className="px-3 py-2 text-right font-mono">{r.std}</td>
-										<td className="px-3 py-2 text-right font-mono">{r.min}</td>
-										<td className="px-3 py-2 text-right font-mono">{r.max}</td>
+									<tr
+										key={r.variant}
+										className="border-b border-border last:border-0"
+									>
+										<td className="px-3 py-2 font-mono">
+											{r.variant}
+										</td>
+										<td className="px-3 py-2 text-right font-mono">
+											{r.mean}
+										</td>
+										<td className="px-3 py-2 text-right font-mono">
+											{r.std}
+										</td>
+										<td className="px-3 py-2 text-right font-mono">
+											{r.min}
+										</td>
+										<td className="px-3 py-2 text-right font-mono">
+											{r.max}
+										</td>
 									</tr>
 								))}
 							</tbody>
 						</table>
 						<p className="text-[10px] text-muted-foreground font-mono px-3 py-2 border-t border-border">
-							595 rows remaining after length filter (1200–1300 aa)
+							595 rows remaining after length filter (1200–1300
+							aa)
 						</p>
 					</div>
 				</div>
