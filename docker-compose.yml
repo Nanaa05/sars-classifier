@@ -6,8 +6,8 @@ services:
             context: .
             dockerfile: src/backend/Dockerfile
         container_name: sars-backend
-        expose:
-            - "8080"
+        ports:
+            - "8080:8080"
         restart: always
 
     frontend:

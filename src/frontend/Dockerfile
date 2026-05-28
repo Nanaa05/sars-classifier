@@ -1,7 +1,8 @@
 FROM node:20-alpine AS builder
 WORKDIR /app
-COPY src/frontend/package*.json ./
-RUN npm ci
+# copy only package.json to allow fresh install from updated dependencies
+COPY src/frontend/package.json ./
+RUN npm install
 COPY src/frontend/ .
 # Set API URL to use relative path (proxied through Caddy)
 ARG VITE_API_URL=

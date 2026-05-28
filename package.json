@@ -1,0 +1,17 @@
+{
+	"name": "sars-classifier",
+	"private": true,
+	"version": "0.1.0",
+	"type": "module",
+	"scripts": {
+		"dev": "concurrently \"npm:dev:backend\" \"npm:dev:frontend\"",
+		"dev:backend": "cd src/backend && uvicorn main:app --reload --host 0.0.0.0 --port 8080",
+		"dev:frontend": "cd src/frontend && npm run dev",
+		"build": "npm --prefix src/frontend run build",
+		"preview": "npm --prefix src/frontend run preview",
+		"lint": "npm --prefix src/frontend run lint"
+	},
+	"devDependencies": {
+		"concurrently": "^9.1.2"
+	}
+}
