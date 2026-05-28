@@ -109,31 +109,35 @@ def smith_waterman_affine(seq1, seq2, gap_open=-10, gap_extend=-0.5):
     aligned_seq2 = []
     i, j = max_i, max_j
     
-    while i > 0 and j > 0 and M[i, j] > 0:
+    state = 0
+    
+    while i > 0 and j > 0 and (M[i, j] > 0 or X[i, j] > 0 or Y[i, j] > 0):
         match_score = get_score(matrix, seq1[i-1], seq2[j-1])
         
-        if M[i, j] == match_score + M[i-1, j-1]:
+        if state == 0:
+            if M[i, j] == 0:
+                break
             aligned_seq1.append(seq1[i-1])
             aligned_seq2.append(seq2[j-1])
+            
+            if M[i, j] == match_score + M[i-1, j-1]: state = 0
+            elif M[i, j] == match_score + X[i-1, j-1]: state = 1
+            else: state = 2
             i -= 1; j -= 1
-        elif M[i, j] == match_score + X[i-1, j-1]:
-            aligned_seq1.append(seq1[i-1])
-            aligned_seq2.append(seq2[j-1])
-            i -= 1; j -= 1
-        elif M[i, j] == match_score + Y[i-1, j-1]:
-            aligned_seq1.append(seq1[i-1])
-            aligned_seq2.append(seq2[j-1])
-            i -= 1; j -= 1
-        elif M[i, j] == X[i, j]:
+            
+        elif state == 1: # Gap di sekuens 2 (seq2 dapet '-')
             aligned_seq1.append(seq1[i-1])
             aligned_seq2.append('-')
+            if X[i, j] == M[i-1, j] + gap_open: state = 0
+            else: state = 1
             i -= 1
-        elif M[i, j] == Y[i, j]:
+            
+        elif state == 2: # Gap di sekuens 1 (seq1 dapet '-')
             aligned_seq1.append('-')
             aligned_seq2.append(seq2[j-1])
+            if Y[i, j] == M[i, j-1] + gap_open: state = 0
+            else: state = 2
             j -= 1
-        else:
-            break
 
     aligned_seq1 = "".join(reversed(aligned_seq1))
     aligned_seq2 = "".join(reversed(aligned_seq2))

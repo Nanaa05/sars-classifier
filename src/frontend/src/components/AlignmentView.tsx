@@ -17,6 +17,7 @@ export const AlignmentView: React.FC<AlignmentViewProps> = ({
 
 	const refChars = reference.split("");
 	const qChars = query.split("");
+	const minLength = Math.min(refChars.length, qChars.length);
 
 	return (
 		<div
@@ -64,8 +65,11 @@ export const AlignmentView: React.FC<AlignmentViewProps> = ({
 					lineHeight: "1.8",
 				}}
 			>
+				{/* Baris REFERENCE */}
 				<div style={{ display: "flex" }}>
-					<span style={{ width: "80px", color: "#888", flexShrink: 0 }}>
+					<span
+						style={{ width: "80px", color: "#888", flexShrink: 0 }}
+					>
 						REF:{" "}
 					</span>
 					{refChars.map((char, idx) => (
@@ -82,23 +86,35 @@ export const AlignmentView: React.FC<AlignmentViewProps> = ({
 					))}
 				</div>
 
+				{/* Baris MATCH CONNECTORS (|) */}
 				<div style={{ display: "flex", color: "#4caf50" }}>
 					<span style={{ width: "80px", flexShrink: 0 }} />
-					{refChars.map((char, idx) => (
-						<span key={`match-${idx}`}>
-							{char === qChars[idx] && char !== "-" ? "|" : " "}
+					{Array.from({ length: minLength }).map((_, idx) => (
+						<span
+							key={`match-${idx}`}
+							style={{ padding: "0 1px" }}
+						>
+							{refChars[idx] === qChars[idx] &&
+							refChars[idx] !== "-"
+								? "|"
+								: " "}
 						</span>
 					))}
 				</div>
 
+				{/* Baris QUERY */}
 				<div style={{ display: "flex" }}>
-					<span style={{ width: "80px", color: "#888", flexShrink: 0 }}>
+					<span
+						style={{ width: "80px", color: "#888", flexShrink: 0 }}
+					>
 						QUERY:{" "}
 					</span>
 					{qChars.map((char, idx) => {
 						const isGap = char === "-";
 						const isMismatch =
-							char !== refChars[idx] && !isGap;
+							idx < refChars.length &&
+							char !== refChars[idx] &&
+							!isGap;
 						return (
 							<span
 								key={`query-${idx}`}
