@@ -1,131 +1,137 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import SequenceForm from "./components/SequenceForm";
-import AlignmentView from "./components/AlignmentView";
-import DashboardCharts from "./components/DashboardCharts";
+import { ResultsTabs } from "./components/ResultsTabs";
+import { VariantCards } from "./components/VariantCards";
+import { MethodsSection } from "./components/MethodsSection";
 
-interface ClassificationResult {
-  prediction: string;
-  probabilities: Record<string, number> | null;
-  features: {
-    length: number;
-    score_blosum: number;
-    mismatches: number;
-    gap_count: number;
-  };
-  alignment_global: { score: number; reference: string; query: string };
-  alignment_local: { score: number; reference: string; query: string };
+export interface ClassificationResult {
+	prediction: string;
+	confidence: number;
+	probabilities: Record<string, number> | null;
+	detected_markers: string[];
+	features: {
+		length: number;
+		score_blosum: number;
+		mismatches: number;
+		gap_count: number;
+		gap_openings: number;
+		identity_pct: number;
+	};
+	alignment_global: {
+		score: number;
+		reference: string;
+		query: string;
+		identity_pct: number;
+		gap_openings: number;
+	};
+	alignment_local: {
+		score: number;
+		reference: string;
+		query: string;
+		identity_pct: number;
+	};
 }
 
 function App() {
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<ClassificationResult | null>(null);
-  const [error, setError] = useState<string | null>(null);
+	const [loading, setLoading] = useState(false);
+	const [result, setResult] = useState<ClassificationResult | null>(null);
+	const [error, setError] = useState<string | null>(null);
+	const [elapsed, setElapsed] = useState(0);
+	const [totalTime, setTotalTime] = useState<number | null>(null);
+	const startRef = useRef<number>(0);
+	const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const handleClassify = async (sequence: string, modelType: string) => {
-    setLoading(true);
-    setError(null);
-    setResult(null);
+	useEffect(() => {
+		return () => { if (timerRef.current) clearInterval(timerRef.current); };
+	}, []);
 
-    try {
-      const baseUrl = import.meta.env.VITE_API_URL || "";
+	const handleClassify = async (sequence: string, modelType: string) => {
+		setLoading(true);
+		setError(null);
+		setResult(null);
+		setTotalTime(null);
+		setElapsed(0);
+		startRef.current = performance.now();
+		timerRef.current = setInterval(() => {
+			setElapsed(Math.floor((performance.now() - startRef.current) / 100) / 10);
+		}, 100);
+		try {
+			const baseUrl = import.meta.env.VITE_API_URL || "";
+			const response = await fetch(`${baseUrl}/api/classify`, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ sequence, model_type: modelType }),
+			});
+			if (!response.ok) {
+				const errData = await response.json();
+				throw new Error(
+					errData.detail || "Failed to fetch classification result",
+				);
+			}
+			setResult(await response.json());
+			setTotalTime(Math.round((performance.now() - startRef.current) / 100) / 10);
+		} catch (err: unknown) {
+			setError(err instanceof Error ? err.message : String(err));
+		} finally {
+			if (timerRef.current) clearInterval(timerRef.current);
+			setLoading(false);
+		}
+	};
 
-      const response = await fetch(`${baseUrl}/api/classify`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sequence, model_type: modelType }),
-      });
+	return (
+		<div className="min-h-screen bg-background text-foreground">
+			<header className="border-b border-border">
+				<div className="max-w-6xl mx-auto px-6 py-4 flex items-baseline justify-between">
+					<div className="flex items-baseline gap-3">
+						<span className="font-mono text-lg font-semibold tracking-tight">
+							VariantScope
+						</span>
+						<span className="text-xs text-muted-foreground">
+							SARS-CoV-2 spike variant classifier
+						</span>
+					</div>
+					<div className="text-xs text-muted-foreground font-mono">
+						IF3211 · Kelompok 07
+					</div>
+				</div>
+			</header>
 
-      if (!response.ok) {
-        const errData = await response.json();
-        throw new Error(
-          errData.detail || "Failed to fetch classification result",
-        );
-      }
+			<main className="max-w-6xl mx-auto px-6 py-8 space-y-8">
+				<section className="border border-border rounded-md bg-card p-5">
+					<SequenceForm
+						onSubmit={handleClassify}
+						isLoading={loading}
+						elapsed={elapsed}
+					/>
+					{error && (
+						<p className="mt-3 text-xs text-destructive font-mono">
+							{error}
+						</p>
+					)}
+				</section>
 
-      const data: ClassificationResult = await response.json();
-      setResult(data);
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+				{result && (
+					<>
+						{totalTime !== null && (
+							<p className="text-xs text-muted-foreground font-mono -mt-4">
+								completed in {totalTime}s
+							</p>
+						)}
+						<ResultsTabs result={result} />
+					</>
+				)}
 
-  return (
-    <div
-      style={{
-        maxWidth: "1000px",
-        margin: "0 auto",
-        padding: "24px",
-        fontFamily: "sans-serif",
-      }}
-    >
-      <h1 style={{ textAlign: "center", color: "var(--text-h)" }}>
-        SARS-CoV-2 Variant Classifier
-      </h1>
-      <p
-        style={{
-          textAlign: "center",
-          color: "var(--text)",
-          marginBottom: "32px",
-        }}
-      >
-        Powered by Needleman-Wunsch, Smith-Waterman, and Machine Learning
-      </p>
+				<VariantCards />
+				<MethodsSection />
 
-      <SequenceForm onSubmit={handleClassify} isLoading={loading} />
-
-      {error && (
-        <div
-          style={{
-            padding: "16px",
-            backgroundColor: "#ffebee",
-            color: "#c62828",
-            borderRadius: "4px",
-            marginBottom: "24px",
-          }}
-        >
-          <strong>Error:</strong> {error}
-        </div>
-      )}
-
-      {result && (
-        <div style={{ borderTop: "2px solid #eee", paddingTop: "24px" }}>
-          <div
-            style={{
-              textAlign: "center",
-              marginBottom: "24px",
-              padding: "20px",
-              backgroundColor: "#e8f5e9",
-              borderRadius: "8px",
-            }}
-          >
-            <h2 style={{ margin: 0, color: "#2e7d32" }}>
-              Predicted Variant: {result.prediction}
-            </h2>
-          </div>
-
-          <DashboardCharts probabilities={result.probabilities} />
-
-          <div style={{ marginTop: "32px" }}>
-            <AlignmentView
-              title="Global Alignment (Needleman-Wunsch)"
-              reference={result.alignment_global.reference}
-              query={result.alignment_global.query}
-              score={result.alignment_global.score}
-            />
-
-            <AlignmentView
-              title="Local Alignment (Smith-Waterman)"
-              reference={result.alignment_local.reference}
-              query={result.alignment_local.query}
-              score={result.alignment_local.score}
-            />
-          </div>
-        </div>
-      )}
-    </div>
-  );
+				<footer className="text-xs text-muted-foreground font-mono pt-8 pb-4 border-t border-border">
+					VariantScope · IF3211 Domain Specific Computation ·
+					Kelompok 07 · Reference: SARS-CoV-2 Wuhan-Hu-1 spike (NCBI
+					YP_009724390.1)
+				</footer>
+			</main>
+		</div>
+	);
 }
 
 export default App;

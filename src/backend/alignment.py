@@ -141,20 +141,11 @@ def smith_waterman_affine(seq1, seq2, gap_open=-10, gap_extend=-0.5):
     return max_score, aligned_seq1, aligned_seq2
 
 if __name__ == "__main__":
-    print("Menguji Algoritma Alignment...")
     s1 = "HEAGAWGHEE"
     s2 = "PAWHEAE"
-    
+
     score, al1, al2 = needleman_wunsch_affine(s1, s2)
-    print(f"Sekuens 1: {s1}")
-    print(f"Sekuens 2: {s2}")
-    print(f"Skor Akhir [Global]: {score}")
-    print("Hasil Alignment:")
-    print(al1)
-    print(al2)
-    
-    score_local, al1_local, al2_local = smith_waterman_affine(s1, s2)
-    print(f"\nSkor Akhir [Lokal]: {score_local}")
-    print("Hasil Alignment:")
-    print(al1_local)
-    print(al2_local)
+    print(f"NW global score: {score}\n{al1}\n{al2}")
+
+    score_sw, al1_sw, al2_sw = smith_waterman_affine(s1, s2)
+    print(f"\nSW local score: {score_sw}\n{al1_sw}\n{al2_sw}")

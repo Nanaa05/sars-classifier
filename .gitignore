@@ -6,6 +6,7 @@ __pycache__/
 env/
 venv/
 .ipynb_checkpoints/
+*.egg-info/
 
 # Node/React
 node_modules/

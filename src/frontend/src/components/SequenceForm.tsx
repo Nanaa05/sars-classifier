@@ -1,231 +1,164 @@
-import React, { useState, useRef } from "react";
+import { useState } from "react";
+import { Textarea } from "./ui/textarea";
+import { Button } from "./ui/button";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "./ui/select";
 
 interface SequenceFormProps {
-  onSubmit: (sequence: string, modelType: string) => void;
-  isLoading: boolean;
+	onSubmit: (sequence: string, modelType: string) => void;
+	isLoading: boolean;
+	elapsed?: number;
 }
 
-const DEMO_SEQUENCES = {
-  "Alpha Variant":
-    "MFVFLVLLPLVSSQCVNLTTRTQLPPAYTNSFTRGVYYPDKVFRSSVLHSTQDLFLPFFSNVTWFHAISGTNGTKRFDNPVLPFNDGVYFASTEKSNIIRGWIFGTTLDSKTQSLLIVNNATNVVIKVCEFQFCNDPFLGVYHKNNKSWMESEFRVYSSANNCTFEYVSQPFLMDLEGKQGNFKNLREFVFKNIDGYFKIYSKHTPINLVRDLPQGFSALEPLVDLPIGINITRFQTLLALHRSYLTPGDSXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXITDAVDCALDPLSETKCTLKSFTVEKGIYQTSNFRVXXXXXXXRFPNITNLCPFGEVFNATRFASVYAWNRKRISNCVADYSVLYNSASFSTFKCYGVSPTKLNDLCFTNVYADSFVIRGDEVRQIAPGQTGKIADYNYKLPDDFTGCVIAWNSNNLDSKVGGNYNYLYRLFRKSNLKPFERDISTEIYQAGSTPCNGVEGFNCYFPLQSYGFQPTYGVGYQPYRVVVLSFELLHAPATVCGPKKSTNLVKNKCVNFNFNGLTGTGVLTESNKKFLPFQQFGRDIDDTTDAVRDPQTLDILDITPCSFGGVSVITPGTNTSNQVAVLYQGVNCTEVPVAIHADQLTPTWRVYSTGSNVFQTRAGCLIGAEHVNNSYECDIPIGAGICASYQTQTNSHRRARSVASQSIIAYTMSLGAENSVAYSNNSIAIPINFTISVTTEILPVSMTKTSVDCTMYICGDSTECSNLLLQYGSFCTQLNRALTGIAVEQDKNTQEVFAQVKQIYKTPPIKDFGGFNFSQILPDPSKPSKRSFIEDLLFNKVTLADAGFIKQYGDCLGDIAARDLICAQKFNGLTVLPPLLTDEMIAQYTSALLAGTITSGWTFGAGAALQIPFAMQMAYRFNGIGVTQNVLYENQKLIANQFNSAIGKIQDSLSSTASALGKLQDVVNQNAQALNTLVKQLSSNFGAISSVLNDILARLDKVEAEVQIDRLITGRLQSLQTYVTQQLIRAAEIRASANLAATKMSECVLGQSKRVDFCGKGYHLMSFPQSAPHGVVFLHVTYVPAQEKNFTTAPAICHDGKAHFPREGVFVSNGTHWFVTQRNFYEPQIITTHNTFVSGNCDVVIGIVNNTVYDPLQPELDSFKEELDKYFKNHTSPDVDLGDISGINASVVNIQKEIDRLNEVAKNLNESLIDLQELGKYEQYIKWPWYIWLGFIAGLIAIVMVTIMLCCMTSCCSCLKGCCSCGSCCKFDEDDSEPVLKGVKLHYT",
+const DEMO_SEQUENCES: Record<string, string> = {
+	"Wuhan wild-type":
+		"MFVFLVLLPLVSSQCVNLTTRTQLPPAYTNSFTRGVYYPDKVFRSSVLHSTQDLFLPFFSNVTWFHAIHVSGTNGTKRFDNPVLPFNDGVYFASTEKSNIIRGWIFGTTLDSKTQSLLIVNNATNVVIKVCEFQFCNDPFLGVYYHKNNKSWMESEFRVYSSANNCTFEYVSQPFLMDLEGKQGNFKNLREFVFKNIDGYFKIYSKHTPINLVRDLPQGFSALEPLVDLPIGINITRFQTLLALHRSYLTPGDSSSGWTAGAAAYYVGYLQPRTFLLKYNENGTITDAVDCALDPLSETKCTLKSFTVEKGIYQTSNFRVQPTESIVRFPNITNLCPFGEVFNATRFASVYAWNRKRISNCVADYSVLYNSASFSTFKCYGVSPTKLNDLCFTNVYADSFVIRGDEVRQIAPGQTGKIADYNYKLPDDFTGCVIAWNSNNLDSKVGGNYNYLYRLFRKSNLKPFERDISTEIYQAGSTPCNGVEGFNCYFPLQSYGFQPTNGVGYQPYRVVVLSFELLHAPATVCGPKKSTNLVKNKCVNFNFNGLTGTGVLTESNKKFLPFQQFGRDIADTTDAVRDPQTLEILDITPCSFGGVSVITPGTNTSNQVAVLYQDVNCTEVPVAIHADQLTPTWRVYSTGSNVFQTRAGCLIGAEHVNNSYECDIPIGAGICASYQTQTNSPRRARSVASQSIIAYTMSLGAENSVAYSNNSIAIPTNFTISVTTEILPVSMTKTSVDCTMYICGDSTECSNLLLQYGSFCTQLNRALTGIAVEQDKNTQEVFAQVKQIYKTPPIKDFGGFNFSQILPDPSKPSKRSFIEDLLFNKVTLADAGFIKQYGDCLGDIAARDLICAQKFNGLTVLPPLLTDEMIAQYTSALLAGTITSGWTFGAGAALQIPFAMQMAYRFNGIGVTQNVLYENQKLIANQFNSAIGKIQDSLSSTASALGKLQDVVNQNAQALNTLVKQLSSNFGAISSVLNDILSRLDKVEAEVQIDRLITGRLQSLQTYVTQQLIRAAEIRASANLAATKMSECVLGQSKRVDFCGKGYHLMSFPQSAPHGVVFLHVTYVPAQEKNFTTAPAICHDGKAHFPREGVFVSNGTHWFVTQRNFYEPQIITTDNTFVSGNCDVVIGIVNNTVYDPLQPELDSFKEELDKYFKNHTSPDVDLGDISGINASVVNIQKEIDRLNEVAKNLNESLIDLQELGKYEQYIKWPWYIWLGFIAGLIAIVMVTIMLCCMTSCCSCLKGCCSCGSCCKFDEDDSEPVLKGVKLHYT",
 
-  "Delta Variant":
-    "MFVFLVLLPLVSSQCVNLRTRTQLPPAYTNSFTRGVYYPDKVFRSSVLHSTQDLFLPFFSNVTWFHAIHVSGTNGTKRFDNPVLPFNDGVYFASIEKSNIIRGWIFGTTLDSKTQSLLIVNNATNVVIKVCEFQFCNDPFLDVYYHKNNKSWMESGVYSSANNCTFEYVSQPFLMNLEGKQGNFKNLREFVFKNIDGYFKIYSKHTPINLVRDLPQGFSALEPLVDLPIGINITRFQTLLALHRSYLTPGDSSSGWTAGAAAYYVGYLQPRTFLLKYNENGTITDAVDCALDPLSETKCTLKSFTVEKGIYQTSNFRVQPTESIVRFPNITNLCPFGEVFNATRFASVYAWNRKRISNCVADYSVLYNSASFSTFKCYGVSPTKLNDLCFTNVYADSFVIRGDEVRQIAPGQTGKIADYNYKLPDDFTGCVIAWNSNNLDSKVGGNYNYRYRLFRKSNLKPFERDISTEIYQAGSKPCNGVEGFNCYFPLQSYGFQPTNGVGYQPYRVVVLSFELLHAPATVCGPKKSTNLVKNKCVNFNFNGLTGTGVLTESNKKFLPFQQFGRDIADTTDAVRDPQTLEILDITPCSFGGVSVITPGTNTSNQVAVLYQGVNCTEVPVAIHADQLTPTWRVYSTGSNVFQTRAGCLIGAEHVNNSYECDIPIGAGICASYQTQTNSRRRARSVASQSIIAYTMSLGAENSVAYSNNSIAIPTNFTISVTTEILPVSMTKTSVDCTMYICGDSTECSNLLLQYGSFCTQLNRALTGIAVEQDKNTQEVFAQVKQIYKTPPIKDFGGFNFSQILPDPSKPSKRSFIEDLLFNKVTLADAGFIKQYGDCLGDIAARDLICAQKFNGLTVLPPLLTDEMIAQYTSALLAGTITSGWTFGAGAALQIPFAMQMAYRFNGIGVTQNVLYENQKLIANQFNSAIGKIQDSLSSTASALGKLQNVVNQNAQALNTLVKQLSSNFGAISSVLNDILSRLDKVEAEVQIDRLITGRLQSLQTYVTQQLIRAAEIRASANLAATKMSECVLGQSKRVDFCGKGYHLMSFPQSAPHGVVFLHVTYVPAQEKNFTTAPAICHDGKAHFPREGVFVSNGTHWFVTQRNFYEPQIITTDNTFVSGNCDVVIGIVNNTVYDPLQPELDSFKEELDKYFKNHTSPDVDLGDISGINASVVNIQKEIDRLNEVAKNLNESLIDLQELGKYEQYIKWPWYIWLGFIAGLIAIVMVTIMLCCMTSCCSCLKGCCSCGSCCKFDEDDSEPVLKGVKLHYT",
+	"Alpha (B.1.1.7)":
+		"MFVFLVLLPLVSSQCVNLTTRTQLPPAYTNSFTRGVYYPDKVFRSSVLHSTQDLFLPFFSNVTWFHAISGTNGTKRFDNPVLPFNDGVYFASTEKSNIIRGWIFGTTLDSKTQSLLIVNNATNVVIKVCEFQFCNDPFLGVYHKNNKSWMESEFRVYSSANNCTFEYVSQPFLMDLEGKQGNFKNLREFVFKNIDGYFKIYSKHTPINLVRDLPQGFSALEPLVDLPIGINITRFQTLLALHRSYLTPGDSXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXITDAVDCALDPLSETKCTLKSFTVEKGIYQTSNFRVXXXXXXXRFPNITNLCPFGEVFNATRFASVYAWNRKRISNCVADYSVLYNSASFSTFKCYGVSPTKLNDLCFTNVYADSFVIRGDEVRQIAPGQTGKIADYNYKLPDDFTGCVIAWNSNNLDSKVGGNYNYLYRLFRKSNLKPFERDISTEIYQAGSTPCNGVEGFNCYFPLQSYGFQPTYGVGYQPYRVVVLSFELLHAPATVCGPKKSTNLVKNKCVNFNFNGLTGTGVLTESNKKFLPFQQFGRDIDDTTDAVRDPQTLDILDITPCSFGGVSVITPGTNTSNQVAVLYQGVNCTEVPVAIHADQLTPTWRVYSTGSNVFQTRAGCLIGAEHVNNSYECDIPIGAGICASYQTQTNSHRRARSVASQSIIAYTMSLGAENSVAYSNNSIAIPINFTISVTTEILPVSMTKTSVDCTMYICGDSTECSNLLLQYGSFCTQLNRALTGIAVEQDKNTQEVFAQVKQIYKTPPIKDFGGFNFSQILPDPSKPSKRSFIEDLLFNKVTLADAGFIKQYGDCLGDIAARDLICAQKFNGLTVLPPLLTDEMIAQYTSALLAGTITSGWTFGAGAALQIPFAMQMAYRFNGIGVTQNVLYENQKLIANQFNSAIGKIQDSLSSTASALGKLQDVVNQNAQALNTLVKQLSSNFGAISSVLNDILARLDKVEAEVQIDRLITGRLQSLQTYVTQQLIRAAEIRASANLAATKMSECVLGQSKRVDFCGKGYHLMSFPQSAPHGVVFLHVTYVPAQEKNFTTAPAICHDGKAHFPREGVFVSNGTHWFVTQRNFYEPQIITTHNTFVSGNCDVVIGIVNNTVYDPLQPELDSFKEELDKYFKNHTSPDVDLGDISGINASVVNIQKEIDRLNEVAKNLNESLIDLQELGKYEQYIKWPWYIWLGFIAGLIAIVMVTIMLCCMTSCCSCLKGCCSCGSCCKFDEDDSEPVLKGVKLHYT",
 
-  "Omicron Variant":
-    "MFVFLVLLPLVSSQCVNLTTRTQLPPAYTNSFTRGVYYPDKVFRSSVLHSTQDLFLPFFSNVTWFHVISGTNGTKRFDNPVLPFNDGVYFASIEKSNIIRGWIFGTTLDSKTQSLLIVNNATNVVIKVCEFQFCNDPFLDHKNNKSWMESEFRVYSSANNCTFEYVSQPFLMDLEGKQGNFKNLREFVFKNIDGYFKIYSKHTPIIVREPEDLPQGFSALEPLVDLPIGINITRFQTLLALHRSYLTPGDSSSGWTAGAAAYYVGYLQPRTFLLKYNENGTITDAVDCALDPLSETKCTLKSFTVEKGIYQTSNFRVQPTESIVRFPNITNLCPFDEVFNATRFASVYAWNRKRISNCVADYSVLYNLAPFFTFKCYGVSPTKLNDLCFTNVYADSFVIRGDEVRQIAPGQTGNIADYNYKLPDDFTGCVIAWNSNKLDSKVSGNYNYLYRLFRKSNLKPFERDISTEIYQAGNKPCNGVAGFNCYFPLRSYSFRPTYGVGHQPYRVVVLSFELLHAPATVCGPKKSTNLVKNKCVNFNFNGLKGTGVLTESNKKFLPFQQFGRDIADTTDAVRDPQTLEILDITPCSFGGVSVITPGTNTSNQVAVLYQGVNCTEVPVAIHADQLTPTWRVYSTGSNVFQTRAGCLIGAEYVNNSYECDIPIGAGICASYQTQTKSHRRARSVASQSIIAYTMSLGAENSVAYSNNSIAIPTNFTISVTTEILPVSMTKTSVDCTMYICGDSTECSNLLLQYGSFCTQLKRALTGIAVEQDKNTQEVFAQVKQIYKTPPIKYFGGFNFSQILPDPSKPSKRSFIEDLLFNKVTLADAGFIKQYGDCLGDIAARDLICAQKFKGLTVLPPLLTDEMIAQYTSALLAGTITSGWTFGAGAALQIPFAMQMAYRFNGIGVTQNVLYENQKLIANQFNSAIGKIQDSLSSTASALGKLQDVVNHNAQALNTLVKQLSSKFGAISSVLNDIFSRLDKVEAEVQIDRLITGRLQSLQTYVTQQLIRAAEIRASANLAATKMSECVLGQSKRVDFCGKGYHLMSFPQSAPHGVVFLHVTYVPAQEKNFTTAPAICHDGKAHFPREGVFVSNGTHWFVTQRNFYEPQIITTDNTFVSGNCDVVIGIVNNTVYDPLQPELDSFKEELDKYFKNHTSPDVDLGDISGINASVVNIQKEIDRLNEVAKNLNESLIDLQELGKYEQYIKWPWYIWLGFIAGLIAIVMVTIMLCCMTSCCSCLKGCCSCGSCCKFDEDDSEPVLKGVKLHYT",
+	"Delta (B.1.617.2)":
+		"MFVFLVLLPLVSSQCVNLRTRTQLPPAYTNSFTRGVYYPDKVFRSSVLHSTQDLFLPFFSNVTWFHAIHVSGTNGTKRFDNPVLPFNDGVYFASIEKSNIIRGWIFGTTLDSKTQSLLIVNNATNVVIKVCEFQFCNDPFLDVYYHKNNKSWMESGVYSSANNCTFEYVSQPFLMNLEGKQGNFKNLREFVFKNIDGYFKIYSKHTPINLVRDLPQGFSALEPLVDLPIGINITRFQTLLALHRSYLTPGDSSSGWTAGAAAYYVGYLQPRTFLLKYNENGTITDAVDCALDPLSETKCTLKSFTVEKGIYQTSNFRVQPTESIVRFPNITNLCPFGEVFNATRFASVYAWNRKRISNCVADYSVLYNSASFSTFKCYGVSPTKLNDLCFTNVYADSFVIRGDEVRQIAPGQTGKIADYNYKLPDDFTGCVIAWNSNNLDSKVGGNYNYRYRLFRKSNLKPFERDISTEIYQAGSKPCNGVEGFNCYFPLQSYGFQPTNGVGYQPYRVVVLSFELLHAPATVCGPKKSTNLVKNKCVNFNFNGLTGTGVLTESNKKFLPFQQFGRDIADTTDAVRDPQTLEILDITPCSFGGVSVITPGTNTSNQVAVLYQGVNCTEVPVAIHADQLTPTWRVYSTGSNVFQTRAGCLIGAEHVNNSYECDIPIGAGICASYQTQTNSRRRARSVASQSIIAYTMSLGAENSVAYSNNSIAIPTNFTISVTTEILPVSMTKTSVDCTMYICGDSTECSNLLLQYGSFCTQLNRALTGIAVEQDKNTQEVFAQVKQIYKTPPIKDFGGFNFSQILPDPSKPSKRSFIEDLLFNKVTLADAGFIKQYGDCLGDIAARDLICAQKFNGLTVLPPLLTDEMIAQYTSALLAGTITSGWTFGAGAALQIPFAMQMAYRFNGIGVTQNVLYENQKLIANQFNSAIGKIQDSLSSTASALGKLQNVVNQNAQALNTLVKQLSSNFGAISSVLNDILSRLDKVEAEVQIDRLITGRLQSLQTYVTQQLIRAAEIRASANLAATKMSECVLGQSKRVDFCGKGYHLMSFPQSAPHGVVFLHVTYVPAQEKNFTTAPAICHDGKAHFPREGVFVSNGTHWFVTQRNFYEPQIITTDNTFVSGNCDVVIGIVNNTVYDPLQPELDSFKEELDKYFKNHTSPDVDLGDISGINASVVNIQKEIDRLNEVAKNLNESLIDLQELGKYEQYIKWPWYIWLGFIAGLIAIVMVTIMLCCMTSCCSCLKGCCSCGSCCKFDEDDSEPVLKGVKLHYT",
+
+	"Omicron (BA.1)":
+		"MFVFLVLLPLVSSQCVNLTTRTQLPPAYTNSFTRGVYYPDKVFRSSVLHSTQDLFLPFFSNVTWFHVISGTNGTKRFDNPVLPFNDGVYFASIEKSNIIRGWIFGTTLDSKTQSLLIVNNATNVVIKVCEFQFCNDPFLDHKNNKSWMESEFRVYSSANNCTFEYVSQPFLMDLEGKQGNFKNLREFVFKNIDGYFKIYSKHTPIIVREPEDLPQGFSALEPLVDLPIGINITRFQTLLALHRSYLTPGDSSSGWTAGAAAYYVGYLQPRTFLLKYNENGTITDAVDCALDPLSETKCTLKSFTVEKGIYQTSNFRVQPTESIVRFPNITNLCPFDEVFNATRFASVYAWNRKRISNCVADYSVLYNLAPFFTFKCYGVSPTKLNDLCFTNVYADSFVIRGDEVRQIAPGQTGNIADYNYKLPDDFTGCVIAWNSNKLDSKVSGNYNYLYRLFRKSNLKPFERDISTEIYQAGNKPCNGVAGFNCYFPLRSYSFRPTYGVGHQPYRVVVLSFELLHAPATVCGPKKSTNLVKNKCVNFNFNGLKGTGVLTESNKKFLPFQQFGRDIADTTDAVRDPQTLEILDITPCSFGGVSVITPGTNTSNQVAVLYQGVNCTEVPVAIHADQLTPTWRVYSTGSNVFQTRAGCLIGAEYVNNSYECDIPIGAGICASYQTQTKSHRRARSVASQSIIAYTMSLGAENSVAYSNNSIAIPTNFTISVTTEILPVSMTKTSVDCTMYICGDSTECSNLLLQYGSFCTQLKRALTGIAVEQDKNTQEVFAQVKQIYKTPPIKYFGGFNFSQILPDPSKPSKRSFIEDLLFNKVTLADAGFIKQYGDCLGDIAARDLICAQKFKGLTVLPPLLTDEMIAQYTSALLAGTITSGWTFGAGAALQIPFAMQMAYRFNGIGVTQNVLYENQKLIANQFNSAIGKIQDSLSSTASALGKLQDVVNHNAQALNTLVKQLSSKFGAISSVLNDIFSRLDKVEAEVQIDRLITGRLQSLQTYVTQQLIRAAEIRASANLAATKMSECVLGQSKRVDFCGKGYHLMSFPQSAPHGVVFLHVTYVPAQEKNFTTAPAICHDGKAHFPREGVFVSNGTHWFVTQRNFYEPQIITTDNTFVSGNCDVVIGIVNNTVYDPLQPELDSFKEELDKYFKNHTSPDVDLGDISGINASVVNIQKEIDRLNEVAKNLNESLIDLQELGKYEQYIKWPWYIWLGFIAGLIAIVMVTIMLCCMTSCCSCLKGCCSCGSCCKFDEDDSEPVLKGVKLHYT",
 };
 
-const SequenceForm: React.FC<SequenceFormProps> = ({ onSubmit, isLoading }) => {
-  const [sequence, setSequence] = useState("");
-  const [modelType, setModelType] = useState("rf");
-  const fileInputRef = useRef<HTMLInputElement>(null);
+export default function SequenceForm({
+	onSubmit,
+	isLoading,
+	elapsed = 0,
+}: SequenceFormProps) {
+	const [sequence, setSequence] = useState("");
+	const [modelType, setModelType] = useState("rf");
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+	const aaCount = sequence.replace(/[^A-Za-z]/g, "").length;
 
-    const cleanSequence = sequence
-      .split("\n")
-      .filter((line) => !line.trim().startsWith(">"))
-      .join("")
-      .replace(/\s+/g, "")
-      .toUpperCase();
+	const handleSubmit = (e: React.FormEvent) => {
+		e.preventDefault();
+		const cleanSeq = sequence
+			.split("\n")
+			.filter((line) => !line.trim().startsWith(">"))
+			.join("")
+			.replace(/\s+/g, "")
+			.toUpperCase();
+		if (cleanSeq) {
+			onSubmit(cleanSeq, modelType);
+		}
+	};
 
-    if (cleanSequence) {
-      onSubmit(cleanSequence, modelType);
-    }
-  };
+	return (
+		<form onSubmit={handleSubmit}>
+			<div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-5">
+				{/* Left: textarea + examples */}
+				<div className="space-y-3">
+					<div className="flex items-center justify-between">
+						<span className="text-xs text-muted-foreground font-mono">
+							Input sequence
+						</span>
+						{aaCount > 0 && (
+							<span className="text-xs text-muted-foreground font-mono">
+								{aaCount} aa detected
+							</span>
+						)}
+					</div>
+					<Textarea
+						value={sequence}
+						onChange={(e) =>
+							setSequence(e.target.value.toUpperCase())
+						}
+						placeholder={`>sequence_id\nMFVFLVLLPLVSSQCVNLTTRTQLPPAYTNSFTRGVYYPDKVFRS...`}
+						className="font-mono text-xs min-h-[180px] resize-y"
+						required
+					/>
+					<div className="flex items-center gap-2 flex-wrap">
+						<span className="text-xs text-muted-foreground">
+							Load example:
+						</span>
+						{Object.entries(DEMO_SEQUENCES).map(([label, seq]) => (
+							<button
+								key={label}
+								type="button"
+								onClick={() => setSequence(seq)}
+								className="text-xs px-2.5 py-1 border border-border rounded-sm bg-background hover:bg-accent hover:text-accent-foreground transition-colors font-mono"
+							>
+								{label}
+							</button>
+						))}
+					</div>
+				</div>
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+				{/* Right: controls */}
+				<div className="space-y-4">
+					<dl className="space-y-1.5 text-xs font-mono border border-border rounded-sm p-3 bg-muted/30">
+						<div className="flex justify-between">
+							<dt className="text-muted-foreground">scoring</dt>
+							<dd>protein (simplified)</dd>
+						</div>
+						<div className="flex justify-between">
+							<dt className="text-muted-foreground">match</dt>
+							<dd>+5</dd>
+						</div>
+						<div className="flex justify-between">
+							<dt className="text-muted-foreground">mismatch</dt>
+							<dd>−3</dd>
+						</div>
+						<div className="flex justify-between">
+							<dt className="text-muted-foreground">gap open</dt>
+							<dd>−10</dd>
+						</div>
+						<div className="flex justify-between">
+							<dt className="text-muted-foreground">
+								gap extend
+							</dt>
+							<dd>−0.5</dd>
+						</div>
+					</dl>
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const content = event.target?.result as string;
-      if (content) {
-        setSequence(content);
-      }
-    };
-    reader.readAsText(file);
+					<div className="space-y-1.5">
+						<span className="text-xs text-muted-foreground font-mono">
+							Model
+						</span>
+						<Select
+							value={modelType}
+							onValueChange={setModelType}
+						>
+							<SelectTrigger className="text-xs font-mono">
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem
+									value="rf"
+									className="text-xs font-mono"
+								>
+									Random Forest
+								</SelectItem>
+								<SelectItem
+									value="svm"
+									className="text-xs font-mono"
+								>
+									Support Vector Machine
+								</SelectItem>
+							</SelectContent>
+						</Select>
+					</div>
 
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-  };
-
-  return (
-    <form
-      onSubmit={handleSubmit}
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: "16px",
-        marginBottom: "24px",
-        padding: "20px",
-        backgroundColor: "var(--code-bg)",
-        borderRadius: "8px",
-        border: "1px solid var(--border)",
-        boxSizing: "border-box",
-        width: "100%",
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          gap: "10px",
-          alignItems: "center",
-          flexWrap: "wrap",
-          marginBottom: "8px",
-        }}
-      >
-        <button
-          type="button"
-          onClick={() => fileInputRef.current?.click()}
-          style={{
-            padding: "8px 12px",
-            backgroundColor: "#28a745",
-            color: "#fff",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer",
-            fontWeight: "bold",
-            display: "flex",
-            alignItems: "center",
-            gap: "6px",
-          }}
-        >
-          Upload .FASTA
-        </button>
-        <input
-          type="file"
-          accept=".fasta,.fa,.txt"
-          ref={fileInputRef}
-          style={{ display: "none" }}
-          onChange={handleFileUpload}
-        />
-
-        <span
-          style={{
-            color: "var(--text)",
-            fontSize: "14px",
-            marginLeft: "4px",
-            marginRight: "4px",
-          }}
-        >
-          atau pakai preset:
-        </span>
-
-        {Object.entries(DEMO_SEQUENCES).map(([name, seq]) => (
-          <button
-            key={name}
-            type="button"
-            onClick={() => setSequence(seq)}
-            style={{
-              padding: "6px 12px",
-              backgroundColor: "var(--bg)",
-              color: "var(--text-h)",
-              border: "1px dashed var(--border)",
-              borderRadius: "4px",
-              cursor: "pointer",
-              fontSize: "13px",
-            }}
-          >
-            {name}
-          </button>
-        ))}
-      </div>
-
-      <div>
-        <label
-          htmlFor="sequence"
-          style={{
-            display: "block",
-            marginBottom: "8px",
-            fontWeight: "bold",
-            color: "var(--text-h)",
-          }}
-        >
-          Spike Protein Sequence
-        </label>
-        <textarea
-          id="sequence"
-          rows={6}
-          value={sequence}
-          onChange={(e) => setSequence(e.target.value.toUpperCase())}
-          placeholder="Upload file, klik preset di atas, atau paste teks mentah di sini..."
-          style={{
-            width: "100%",
-            padding: "12px",
-            fontFamily: "var(--mono)",
-            borderRadius: "4px",
-            border: "1px solid var(--border)",
-            backgroundColor: "var(--bg)",
-            color: "var(--text-h)",
-            resize: "vertical",
-            boxSizing: "border-box",
-          }}
-          required
-        />
-      </div>
-
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          flexWrap: "wrap",
-          gap: "12px",
-        }}
-      >
-        <div>
-          <label
-            htmlFor="modelType"
-            style={{
-              marginRight: "12px",
-              fontWeight: "bold",
-              color: "var(--text-h)",
-            }}
-          >
-            Classifier Model:
-          </label>
-          <select
-            id="modelType"
-            value={modelType}
-            onChange={(e) => setModelType(e.target.value)}
-            style={{
-              padding: "8px",
-              borderRadius: "4px",
-              border: "1px solid var(--border)",
-              backgroundColor: "var(--bg)",
-              color: "var(--text-h)",
-              cursor: "pointer",
-            }}
-          >
-            <option value="rf">Random Forest (Baseline & Probabilities)</option>
-            <option value="svm">Support Vector Machine (RBF Kernel)</option>
-          </select>
-        </div>
-
-        <button
-          type="submit"
-          disabled={isLoading || !sequence.trim()}
-          style={{
-            padding: "12px 24px",
-            backgroundColor: isLoading ? "var(--border)" : "#007bff",
-            color: "#fff",
-            border: "none",
-            borderRadius: "4px",
-            cursor: isLoading || !sequence.trim() ? "not-allowed" : "pointer",
-            fontWeight: "bold",
-            transition: "0.2s",
-          }}
-        >
-          {isLoading ? "⏳ Processing Alignment..." : "🚀 Analyze Sequence"}
-        </button>
-      </div>
-    </form>
-  );
-};
-
-export default SequenceForm;
+					<Button
+						type="submit"
+						className="w-full"
+						disabled={isLoading || !sequence.trim()}
+					>
+						{isLoading
+						? `Analyzing... ${elapsed.toFixed(1)}s`
+						: "Analyze sequence →"}
+					</Button>
+				</div>
+			</div>
+		</form>
+	);
+}
